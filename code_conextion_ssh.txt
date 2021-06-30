@@ -1,0 +1,49 @@
+
+    if __name__ == '__main__':
+        print("loading...")
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        #password = input('Pass: ')
+        client.connect(hostname=HOST, username=USER, password=PASS)
+        print("Conection Ok!")
+        sftp = client.open_sftp()
+        sftp
+        try:
+
+            while True:
+                comando = input("Command>> ")
+                if (comando == 'break'):
+                    break
+                std_input, std_output, std_error = client.exec_command(comando)
+                print("Command Ok!")
+                output = std_output.readlines()
+                for line in output:
+                    print(' ###> ', line)
+                time.sleep(1) #Recommend sleep thread for secure in the conection
+            client.close()
+        except:
+            print()
+        print("Finish")
+        client.close()
+
+    else:
+        print("No Init")
+
+
+#code for conect to server with key
+""" 
+    k = paramiko.RSAKey.from_private_key_file(keyfilename)
+    # OR k = paramiko.DSSKey.from_private_key_file(keyfilename)
+    
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname=host, username=user, pkey=k)
+"""
+
+
+    while True:
+        comando = input("Command>> ")
+        if (comando == 'break'):
+            break
+        client_ssh.command_client(comando)
+
+    client_ssh.client_ssh_close()

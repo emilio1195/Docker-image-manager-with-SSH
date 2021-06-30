@@ -1,0 +1,69 @@
+{
+    "Menu_Principal": [
+        {
+            "Docker-compose": [
+                {
+                    "item1": {
+                        "value": "",
+                        "List_items": [
+                            "Installation name",
+                            "Add engine?(optional) yes/not",
+                            "Add transit-random-generator?(optional)",
+                            "Add transit-permit-ext?(optional)",
+                            "Digit maintainer email",
+                            "Host/Ip Address",
+                            "Digits version(lastest or RC)"
+                        ]
+                    }
+                }
+            ],
+            "Execute command": [
+                {
+                    "item1": {
+                        "value": "",
+                        "List_items": [
+                            ">>Digit Command"
+                        ]
+                    }
+                }
+            ],
+            "Configuration": [
+                {
+                    "item1": {
+                        "value": "Add",
+                        "List_items": [
+                            "Configuration Name",
+                            "Add remote server ip",
+                            "Add remote port",
+                            "Add registry(optional)",
+                            "Add registry username(optional)",
+                            "Add registry password(optional)"
+                        ]
+                    },
+                    "item2": {
+                        "value": "Update",
+                        "List_items": [
+                            "List of all configuration availables",
+                            "Enter the configuration name",
+                            "Add remote port",
+                            "Add registry(optional)",
+                            "Add registry username(optional)",
+                            "Add registry password(optional)"
+                        ]
+                    },
+                    "item3": {
+                        "value": "Delete configuration",
+                        "List_items": [
+                            "List of all configuration availables",
+                            "Enter the configuration name to delete"
+                        ]
+                    },
+                    "item4": {
+                        "value": "Back",
+                        "List_items": []
+                    }
+                }
+            ]
+        }
+    ]
+}
