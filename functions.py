@@ -2,6 +2,8 @@ import json
 import os, glob, shutil, tempfile
 import subprocess
 import yaml
+
+import data
 from shh_client import Conex_ssh
 from commands import *
 
@@ -20,21 +22,22 @@ def write_json(dic_data, path, file_json):
         json.dump(dic_data, file, indent=4, ensure_ascii=False)
 
 def read_json(path, file_json):
+
     with open(os.path.join(path, file_json)) as file:
         data_json = json.load(file)
     return data_json
 
-def write_env(dic_data, path, file_env):
+def write_env(dic_data, path):
     create_folder(path)
-    with open(os.path.join(path, file_env.replace(' ', '_')), 'w') as file:
+    with open(os.path.join(path, '.env'), 'w') as file:
         for k, v in dic_data.items():
             file.write(str(k) + '=' + str(v) + '\n')
         file.close()
     print('File .env created!')
 
-def read_env(path, file_env):
+def read_env(path):
     dict_temp = {}
-    with open(os.path.join(path, file_env.replace(' ', '_')), 'r') as file:
+    with open(os.path.join(path, '.env'), 'r') as file:
         for line in file.readlines():
             line = line.strip()
             k = line.split('=')[0]  #vector[0]
@@ -44,14 +47,33 @@ def read_env(path, file_env):
 
     return dict_temp  # obj dict
 
+def read_yaml(path_folder, name_File):
+    path_file = os.path.join(path_folder, name_File + '.yaml')
+    if os.path.isfile(path_file):
+        with open(path_file, 'r') as file:
+            try:
+                data_yaml = yaml.full_load(file)
+            except:
+                data_yaml={}
+
+        return data_yaml
+    else:
+        return {}
+
 def write_yaml(dic_data, path, file_json):
     with open(os.path.join(path, file_json.replace(' ', '_') + '.yaml'), 'w') as file:
-        yaml.dump(dic_data, file)
+        yaml.dump(dic_data, file, sort_keys=False)
     print('File .yaml Created!')
 
-def menu_docker(menu_json, basedir_path):
-    create_folder(basedir_path)
-    docker_data = {}
+def menu_docker(menu_json):
+    path_folder_compose = os.path.join('.', data.name_folder_compose)
+    create_folder(path_folder_compose)
+    docker_data = {
+                    'version': '3.7',
+                    'services': {},
+                    'networks':{}
+                  }
+    dic_services = {}
     for vkey, i in zip(menu_json, range(len(menu_json))):
         value = input(str(i) + "." + vkey + ": ")
         if value == '':
@@ -59,16 +81,59 @@ def menu_docker(menu_json, basedir_path):
 
         if i == 0:
             name_folder = value
-            path = os.path.join(basedir_path, name_folder)
+            path = os.path.join(path_folder_compose, name_folder)
             create_folder(path)
-        key = get_key(vkey)
-        docker_data[key] = value
+            if not os.path.isfile(os.path.join(path, name_folder+'_docker-compose.yaml')):
+                download_git_files_yaml_env(data.github_repo, path, name_folder)
+            store_env2json(name_folder, path)
+            docker_data_tmp = read_yaml(path, name_folder+'_docker-compose')
+            if bool(docker_data_tmp):
+                docker_data = docker_data_tmp
+                dic_services = docker_data['services']
+            else:
+                dic_services = docker_data['services']
+
+        if value == 'yes':
+            if "engine" in vkey:
+                dic_services["engine"] = "#TODO"
+            elif "random-generator" in vkey:
+                dic_services["random-generator"] = "#TODO"
+            elif "permit" in vkey:
+                dic_services['permit-ext'] = "#TODO"
+            docker_data['services'] = dic_services
+
+        if "Host/Ip" in vkey:
+            docker_data["networks"] = {'frontend': {'ipam':{'config':[{"subnet":value}]}}}
 
     # put function for store
     write_yaml(docker_data, path, name_folder + '_docker-compose')
-    write_env(docker_data, path, '.env')
+    store_env_compose(name_folder, path)
 
-def menu_execute(menu_json, basedir_path):
+#store config from json array to env in folder name install compose
+def store_env_compose(name_install_compose, path_folder_install_compose):
+    path_json = os.path.join(".", data.name_folder_json)
+    if os.path.isfile(os.path.join(path_json, data.file_config_json)):
+        file_json = read_json(path_json, data.file_config_json)
+        if name_install_compose in file_json.keys():
+            data_env = file_json[name_install_compose]
+            write_env(data_env, path_folder_install_compose)
+        else:
+            print("No exist this name config: {}, for store in format .env".format(name_install_compose))
+
+#store env downloaded to file config.json, where are all configs have been store beforely
+def store_env2json(name_install_compose, path_folder_install_compose):
+    path_json = os.path.join(".", data.name_folder_json)
+    if os.path.isfile(os.path.join(path_folder_install_compose, '.env')):
+        data_env = read_env(path_folder_install_compose)
+        if os.path.isfile(os.path.join(path_json, data.file_config_json)):
+            data_json = read_json(path_json, data.file_config_json)
+            if not name_install_compose in data_json.keys():
+                data_json[name_install_compose] = data_env
+                write_json(data_json, path_json, data.file_config_json)
+            else:
+                print("No exist this name config: {}, for store in format .env".format(name_install_compose))
+
+def menu_execute(menu_json):
     dic_commands = {'vedraxx release': vedraxx_release, 'vedraxx install':vedraxx_install,
                     'vedraxx up':vedraxx_up, 'vedraxx down':vedraxx_down,
                     'vedraxx install docker':vedraxx_install_docker, 'vedraxx copy':vedraxx_copy}
@@ -84,7 +149,7 @@ def menu_execute(menu_json, basedir_path):
                 command = input(jkey + ": ")
                 if command == 'back':
                     client_ssh.client_ssh_close()
-                    break;
+                    break
                 elif command == 'shell':
                     shell_remote(client_ssh)
 
@@ -108,7 +173,7 @@ def menu_execute(menu_json, basedir_path):
                 else:
                     print('No exist command!')
 
-def menu_config(menu_json, basedir_path):
+def menu_config(menu_json):
     list_options = []
     while True:
         for list_item, i in zip(menu_json['value'], range(len(menu_json))):
@@ -117,88 +182,94 @@ def menu_config(menu_json, basedir_path):
         option = int(input('Insert option: '))
 
 
-def Add(data_env, path):
-    '''
-     if os.path.isfile(os.path.join(path, file_json)):
-        config_data = read_env(path, file_json)
+def Add(data_json):
+    folder_json = os.path.join(".", data.name_folder_json)
+    if os.path.isfile(os.path.join(folder_json, data.file_config_json)):
+        config_array_obj = read_json(folder_json, data.file_config_json)
     else:
-        config_data = {}
-    '''
+        config_array_obj = {}
 
-    config_data = {}
-    for vkey, i in zip(data_env, range(len(data_env))):
-        value = input(vkey + ": ")
-        if value == '':
-            value = 'null'
+    dic_primitivesJson = {}
+    key = ''
+    for jkey, i in zip(data_json, range(len(data_json))):
+        value = input(jkey + ": ")
+
         if i == 0:
-            name_file_env = value + ".env"
-
-        key = get_key(vkey)
-        config_data[key] = value
-
-    write_env(config_data, path, name_file_env)
-
-def Update(data_env, path):
-    if not os.path.exists(path):
-        print("No exist folder env, please first select the option Add for add a new config")
-    else:
-        _exit = False
-        while not _exit:
-            for vkey, i in zip(data_env, range(len(data_env))):
-
-                if i == 0:
-                    key = vkey
-                    print(key+":")
-                    #for config in read_json(path, file_json):
-                    with os.scandir(path) as ficheros:
-                        ficheros = [fichero.name for fichero in ficheros if fichero.is_file()]
-                    for name in ficheros:
-                        print("- " + name.split('.')[0])
-
+            while True:
+                if not value in config_array_obj:
+                    key = value
+                    config_array_obj[key] = {}  # Json name config with Object
+                    break
                 else:
-                    value = input(vkey + ": ")
-                    if i == 1:
-                        name_config = value + '.env'
-                        Exist_file = ficheros.__contains__(name_config)
-                        if Exist_file:
-                            config_data = read_env(path, name_config)
-                        else:
-                            print('Error, Name config incorrect!')
-                            break
-                    else:
-                        key = get_key(vkey)
-                        config_data[key] = value
+                    print("This name already exist, try with other name.\n")
+                    value = input(jkey + ": ")
 
-            if(Exist_file):
-                write_env(config_data, path, name_config)
-                _exit = True
+        else:
+            dic_primitivesJson[jkey] = value
 
-def Delete(data_env, path):
-    if not os.path.exists(path):
-        print("No exist folder env, please first select the option Add for add a new config")
-    else:
-        for jkey, i in zip(data_env, range(len(data_env))):
+    config_array_obj[key] = dic_primitivesJson
+    write_json(config_array_obj, folder_json, data.file_config_json)
 
+
+def Update(data_json):
+    folder_json = os.path.join(".", data.name_folder_json)
+    if os.path.isfile(os.path.join(folder_json, data.file_config_json)):
+        config_array_obj = read_json(folder_json, data.file_config_json)
+        dic_primitivesJson = {}
+        key = ''
+        for jkey, i in zip(data_json, range(len(data_json))):
             if i == 0:
-                key = jkey
-                print(key+":")
-                # for config in read_json(path, file_json):
-                with os.scandir(path) as ficheros:
-                    ficheros = [fichero.name for fichero in ficheros if fichero.is_file()]
-                for name in ficheros:
-                    print("- " + name.split('.')[0])
-
+                print(jkey + ":")
+                for key in config_array_obj.keys():
+                    print("- ", key)
             else:
                 value = input(jkey + ": ")
                 if i == 1:
-                    name_config = value + ".env"
-                    if ficheros.__contains__(name_config):
-                        os.remove(os.path.join(path,name_config))
-                        print(f"File {name_config} deleted correctly!")
-                    else:
-                        print('Error, Name config incorrect!')
+                    name_config = value
+                    while True:
+                        if name_config in config_array_obj.keys():
+                            config_data = config_array_obj[name_config]
+                            break
+                        else:
+                            print('Error, Name config incorrect, try again!')
+                            name_config = input(jkey + ": ")
+                else:
+                    #key = get_key(jkey)
+                    config_data[jkey] = value
 
-def download_git_files_yaml_env(url_gitHib, dst_local):
+        config_array_obj[name_config] = config_data
+        write_json(config_array_obj, folder_json, data.file_config_json)
+
+    else:
+        print("No exist file: ", data.file_config_json)
+
+def Delete(data_json):
+    folder_json = os.path.join(".", data.name_folder_json)
+    if os.path.isfile(os.path.join(folder_json, data.file_config_json)):
+        config_array_obj = read_json(folder_json, data.file_config_json)
+
+        for jkey, i in zip(data_json, range(len(data_json))):
+            if i == 0:
+                print(jkey + ":")
+                for key in config_array_obj.keys():
+                    print("- ", key)
+            else:
+                value = input(jkey + ": ")
+                name_config = value
+                while True:
+                    if name_config in config_array_obj.keys():
+                        del config_array_obj[name_config]
+                        print("Config: {}, have been delete".format(name_config))
+                        break
+                    else:
+                        print('Error, Name config incorrect, try again!')
+                        name_config = input(jkey + ": ")
+
+        write_json(config_array_obj, folder_json, data.file_config_json)
+    else:
+        print("No exist file: ", data.file_config_json)
+
+def download_git_files_yaml_env(url_gitHib, path, name_intall_compose):
     #dst = './t'
     temp_dir = tempfile.mkdtemp()
     print(temp_dir)
@@ -209,17 +280,17 @@ def download_git_files_yaml_env(url_gitHib, dst_local):
     if not _error:
         # print(output)
         # Copy desired file from temporary dir
-        # temp_dir = os.path.join(temp_dir, 'docs')
-        files_yml = glob.glob1(temp_dir, '*.yaml')
-        files_env = glob.glob1(temp_dir, '*.env')
-        for i in files_yml:
-            print('Moving file >> ', i)
-            shutil.move(os.path.join(temp_dir, i), os.path.join(dst_local, i))
-        for k in files_env:
-            print('Moving file >> ', k)
-            shutil.move(os.path.join(temp_dir, k), os.path.join(dst_local, k))
+
+        files_yml = glob.glob1(os.path.join(temp_dir, name_intall_compose), '*.yaml')
+        files_env = glob.glob1(os.path.join(temp_dir, name_intall_compose), '*.env')
+        for file in files_yml:
+            print('Moving file >> ', file)
+            shutil.move(os.path.join(temp_dir, name_intall_compose, file), os.path.join(path, file))
+        for file in files_env:
+            print('Moving file >> ', file)
+            shutil.move(os.path.join(temp_dir, name_intall_compose, file), os.path.join(path, file))
         # Remove temporary dir
-        shutil.rmtree(temp_dir)
+        #shutil.rmtree(temp_dir)
     else:
         print(_error)
 
@@ -245,33 +316,34 @@ def get_key(vkey):
     elif vkey == 'Add transit-permit-ext?(optional)':
         return 'TRANSIT_PERMIT_EXT'
     elif vkey == 'Digit maintainer email':
-        return 'DIGIT_MAINTAINER_EMAIL'
+        return 'MAINTAINER_EMAIL'
     elif vkey == 'Host/Ip Address':
         return 'HOST_IP'
     elif vkey == 'Digits version(lastest or RC)':
-        return 'DIGIT_VERSION'
+        return 'VERSION'
 
 
 
 
 '''
-def Add(data_json, path, file_json):
-    if os.path.isfile(os.path.join(path, file_json)):
-        config = read_env(path, file_json)
+def Add(data_env, path):
+    ''
+     if os.path.isfile(os.path.join(path, file_json)):
+        config_data = read_env(path, file_json)
     else:
-        config = {}
+        config_data = {}
+    ''
 
     config_data = {}
-    key = ''
-    for jkey, i in zip(data_json, range(len(data_json))):
-        value = input(jkey + ": ")
-        
+    for vkey, i in zip(data_env, range(len(data_env))):
+        value = input(vkey + ": ")
+        if value == '':
+            value = 'null'
         if i == 0:
-            key = value
-            config[key] = [] #Json name config with Object
-        else:
-            config_data[jkey] = value
+            name_file_env = value
 
-    config[key].append(config_data)
-    write_env(config, path, file_json)
+        key = get_key(vkey)
+        config_data[key] = value
+
+    write_env(config_data, path, name_file_env)
 '''

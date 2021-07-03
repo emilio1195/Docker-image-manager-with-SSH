@@ -5,10 +5,36 @@ import os, glob
 import shutil
 import tempfile
 import subprocess
+import data
+#from functions import read_json
+path = os.path.join('.',data.name_folder_json)
+#js = read_json(path, data.file_config_json)
+
+import yaml
+
+with open(r'C:\Users\gta20\Documents\ProjectsPyCharm\Code_Menu (2)\Code_Menu\awesome-compose-master\wordpress-mysql\docker-compose.yaml') as file:
+    data_yaml = yaml.full_load(file)
+    services = data_yaml['services']
+
+    print(services['db']['image'])
+    for item, doc in data_yaml.items():
+        print(item, ":", doc)
+
+'''
+for key in js.keys():
+    print ("- ", key)
+ss = js['test1']
+ss['Add remote server ip'] = '0.0.0.0'
+print(ss['Add remote server ip'])
+'''
+
+'''
 os.path.join('.','files_json', 'menu_data.json')
 path_folder = Path(os.path.join('.','files_json', 'menu_data.json')).parent.absolute()
 
 print(path_folder)
+'''
+
 
 '''
 #sourcepath = 'C:\\Users\\gta20\\AppData\\Local\\Temp\\tmpo2axqqcn\\docs'

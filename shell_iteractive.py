@@ -31,14 +31,14 @@ except ImportError:
     has_termios = False
 
 
-def interactive_shell(chan):
+def interactive_shell(chan, command):
     if has_termios:
         posix_shell(chan)
     else:
-        windows_shell(chan)
+        windows_shell(chan, command)
 
 
-def posix_shell(chan):
+def posix_shell(chan, command):
     import select
 
     oldtty = termios.tcgetattr(sys.stdin)
@@ -70,7 +70,7 @@ def posix_shell(chan):
 
 
 # thanks to Mike Looijmans for this code
-def windows_shell(chan):
+def windows_shell(chan, command):
     import threading
 
     sys.stdout.write(
@@ -93,8 +93,8 @@ def windows_shell(chan):
 
     try:
         while True:
-            #d=input('$ ')+'\n'
-            d = sys.stdin.read(1)
+            d=command
+            #d = sys.stdin.read(1)
             if not d:
                 break
             chan.send(d)

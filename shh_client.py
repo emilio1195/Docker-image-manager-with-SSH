@@ -73,10 +73,9 @@ class Conex_ssh:
     def sftp_close(self):
         self.sftp.close()
 
-    def cmd_it(self):
+    def cmd_it(self, command):
         from shell_iteractive import interactive_shell
         channel = self.client_ssh.get_transport().open_session()
         channel.invoke_shell()
-        interactive_shell(channel)
+        interactive_shell(channel, command)
         self.client_ssh.close()
-ssh = Conex_ssh()

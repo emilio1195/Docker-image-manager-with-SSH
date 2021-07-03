@@ -1,13 +1,15 @@
 name_folder_json = 'files_json'
 file_menu_json = "menu_data.json"
-
-name_folder_env = 'files_env'
+file_config_json = "config.json"
+file_sh = "install_dockerYcompose.sh"
+name_folder_env = 'file_env'
 name_folder_compose = 'files_compose'
-
+name_folder_sh = "file_sh"
 name_folder_docker_remote = 'docker_install'
 
-HOST = '34.132.49.242' #'141.94.16.193'
-PORT = 25
-USER = 'emilio1195' #'maintainer'
-PASS = '#emilio1195' #'MRXCQp48RMAh'
+HOST = '34.121.234.53'
+PORT = 22
+USER = 'emilio1195'
+PASS = '#emilio1195'
 
+github_repo = 'https://github.com/emilio1195/docker_compose'

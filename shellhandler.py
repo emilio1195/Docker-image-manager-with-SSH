@@ -2,6 +2,9 @@ import select
 import time
 import paramiko
 
+import data
+
+
 class ShellHandler:
     def __init__(self, host, user, psw):
         print("Initialising instance of ShellHandler host:{0}".format(host))
@@ -67,12 +70,7 @@ class ShellHandler:
     def sftp_close(self):
         self.ssh.close()
 
-HOST = '34.66.67.240' #'141.94.16.193'
-PORT = 22
-USER = 'emilio1195' #'maintainer'
-PASS = '#emilio1195' #'MRXCQp48RMAh'
-dest = '/home/emilio1195'
-ssh = ShellHandler(HOST, USER, PASS)
+ssh = ShellHandler(data.HOST, data.USER, data.PASS)
 while True:
     cmd = input("cmd >> ")
     ssh.execute(cmd)

@@ -3,8 +3,6 @@ import os
 import data
 
 menu_json = data.file_menu_json
-path_folder_env = os.path.join('.', data.name_folder_env)
-path_folder_compose = os.path.join('.', data.name_folder_compose)
 
 from functions import menu_docker, menu_execute, menu_config, Add, Update, Delete
 
@@ -29,7 +27,7 @@ with open(os.path.join('.',data.name_folder_json, menu_json)) as file:
                 print('\n**_______ %s Menu________**' % list_options[option])
                 for num_item, i in zip(item, range(len(item))):
                     if (item[num_item]['value'] ==''):
-                        list_functions[option](item[num_item]['List_items'], path_folder_compose)
+                        list_functions[option](item[num_item]['List_items'])
                     else:
                         print(item[num_item]['value'] + '(%d)' % i)
                         list_option_config.append(item[num_item]['value'])
@@ -38,6 +36,7 @@ with open(os.path.join('.',data.name_folder_json, menu_json)) as file:
                     option = int(input('Insert option: '))
                     if option < len(list_txt_config):
                         print('\n**_______ %s Menu________**' % list_txt_config[option])
-                        list_functions_config[option](item['item'+str(option+1)]['List_items'], path_folder_env)
+                        list_functions_config[option](item['item'+str(option+1)]['List_items'])
+
                     else: break
 

@@ -10,14 +10,20 @@ def vedraxx_install_docker(client_ssh):
     ftp_client = client_ssh.open_sftp()
     path_newFolder = os.path.join(get_path_server_remote(client_ssh), data.name_folder_docker_remote).replace('\\','/').replace(' ', '_')
     destPathExists = create_folder(ftp_client,path_newFolder)
-
+    vedraxx_copy(os.path.join('.',data.name_folder_sh), client_ssh, path_newFolder)
     if destPathExists == False:
-        print('Error to create dir: {}\n Try Again!'.format(folder_docker))
+        print('Error to create dir: {}\n Try Again!'.format(data.name_folder_docker_remote))
     else:
         print('Installing Docker...')
-        cmd = 'cd {name_folder}; curl -fsSL https://get.docker.com | sh; sudo service docker start; sudo docker run hello-world'.format(name_folder=folder_docker)
+        #cmd = 'cd {name_folder}; curl -fsSL https://get.docker.com | sh; sudo service docker start; sudo docker run hello-world'.format(name_folder=folder_docker)
+        print('In this moment, the function automate for install is disable, please open the shell in your server remote '
+              'and paste that follows commands for install docker & docker-compose: \n'
+              '- First: sudo curl -fsSL https://get.docker.com | sh\n'
+              '- Second: sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose\n'
+              '- Third: sudo chmod +x /usr/local/bin/docker-compose')
 
-        client_ssh.command_client(cmd)
+              #'sudo sh ' + path_newFolder + '/'+ data.name_folder_sh + '/'+data.file_sh
+        #client_ssh.command_client(cmd)
 def vedraxx_release(install_name, client_ssh, path_dest_remote):
     #show versions
     url_registry = 'https://registry.hub.docker.com/v2/repositories/library'
@@ -37,14 +43,17 @@ def vedraxx_release(install_name, client_ssh, path_dest_remote):
 def vedraxx_up(install_name, client_ssh, path_dest_remote):
     #copy folder to remote folder
     vedraxx_install(install_name, client_ssh, path_dest_remote)
+    path_server = get_path_server_remote(client_ssh)
+    print('docker-compose up, wait...')
     #if (client_ssh.command_client(install_name) == 'Is a directory'):
-    cmd = "cd {name}; docker-compose -f {name}_docker-compose.yaml up".format(name=install_name)
+    cmd = "cd {path}; sudo docker-compose -f {name}_docker-compose.yaml up".format(path=os.path.join(path_server,install_name), name=install_name)
     client_ssh.command_client(cmd)
 
 def vedraxx_down(install_name, client_ssh, path_dest_remote):
     #execute command in remote server
-    #if (client_ssh.command_client(install_name) == 'Is a directory'):
-    cmd = "cd {name}; docker-compose -f {name}_docker-compose.yaml down".format(name=install_name)
+    path_server = get_path_server_remote(client_ssh)
+    print('docker-compose down, wait...')
+    cmd = "cd {path}; sudo docker-compose -f {name}_docker-compose.yaml down".format(path=os.path.join(path_server,install_name), name=install_name)
     client_ssh.command_client(cmd)
 
 def vedraxx_install(name_folder, client_ssh, path_dest_remote):
