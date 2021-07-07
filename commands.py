@@ -26,9 +26,9 @@ def vedraxx_install_docker(client_ssh):
         #client_ssh.command_client(cmd)
 def vedraxx_release(install_name, client_ssh, path_dest_remote):
     #show versions
-    url_registry = 'https://registry.hub.docker.com/v2/repositories/library'
+    url_registry = data.registry.rstrip('/')
     #url_registry = input('Url Registry where are the images '
-    #                     '(example: https://registry.hub.docker.com/v2/repositories/library):\n>> ').rstrip('/')
+    #                     '(example: https://registry.domain/):\n>> ').rstrip('/')
 
     solditems = requests.get(url_registry)
     data = solditems.json()

@@ -39,6 +39,7 @@ class ShellHandler:
 
     def execute(self, cmd):
         cmd = cmd.strip('\n')
+        print("Waiting...")
         self.stdin.write(cmd + '\n')
         # self.stdin.write(self.psw +'\n')
         self.stdin.flush()
@@ -48,12 +49,47 @@ class ShellHandler:
             print("Waiting for recv_ready")
 
         output = ""
+
         while self.channel.recv_ready():
             rl, wl, xl = select.select([self.stdout.channel], [], [], 0.0)
             if len(rl) > 0:
+                #cont = 0
                 tmp = self.stdout.channel.recv(1024)
-                output = output + str(tmp.decode("utf-8"))
-        print(output)
+                output = str(tmp.decode("utf-8")).strip('\r\n')
+                array = output.replace('\r', '').split('\n')
+                for line in array:
+                    if not ' ... ' in line:
+                        if "" != line:
+                            print(line)
+                    else:
+                        for subline in line.split(' ... '):
+                            if "" != subline:
+                                print(subline)
+                array.clear()
+
+            if '$' in output:
+                print("\nFinish.\n")
+                break
+            if 'command not found' in output:
+                print("\nFinish.\n")
+                break
+            '''
+            if cont > 3:
+                if temp_out in output:
+                    print("\nFinish.\n")
+                    break
+            '''
+
+            if 'password' in output:
+                self.stdin.write(input('pass: ')+'\n') #It is important sum the char \n
+                output = ''
+
+            elif '[Y/n] ' in output:
+                self.stdin.write(input('[Y/n]: ')+'\n')
+                output = ''
+
+            time.sleep(1)
+
         return output
 
     def client_ssh_close(self):
