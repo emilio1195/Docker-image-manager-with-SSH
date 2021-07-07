@@ -26,6 +26,5 @@ def run(command):
 if __name__ == "__main__":
     conexSSH = "ssh "+data.USER+'@'+data.HOST
     cmd = input('cmd >> ')
-    print(ssh(data.HOST, cmd, data.USER, data.PASS))
     #for path in run(conexSSH + ' ' + cmd):
         #print(path)

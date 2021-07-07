@@ -12,11 +12,22 @@ class ShellHandler:
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(host, username=user, password=psw, port=22)
+            print("Conection Ok!")
+            self.set_status_conx(True)
             self.channel = self.ssh.invoke_shell()
-        except:
-            print("Error Creating ssh connection to {0}".format(host))
-            print("Exiting ShellHandler")
-            return
+        except paramiko.AuthenticationException as authenticationException:
+            print("Authentication failed, please verify your credentials: %s" % authenticationException)
+            self.set_status_conx(False)
+        except paramiko.SSHException as sshException:
+            print("Unable to establish SSH connection: %s" % sshException)
+            self.set_status_conx(False)
+        except paramiko.BadHostKeyException as badHostKeyException:
+            print("Unable to verify server's host key: %s" % badHostKeyException)
+            self.set_status_conx(False)
+        except Exception as e:
+            print(e.args)
+            self.set_status_conx(False)
+
         self.psw = psw
         self.stdin = self.channel.makefile('wb')
         self.stdout = self.channel.makefile('r')
@@ -65,14 +76,13 @@ class ShellHandler:
                         for subline in line.split(' ... '):
                             if "" != subline:
                                 print(subline)
-                array.clear()
 
-            if '$' in output:
+            if '$' == (array[-1]).rstrip(' '):
                 print("\nFinish.\n")
-                break
+                return '$'
             if 'command not found' in output:
                 print("\nFinish.\n")
-                break
+                return '$'
             '''
             if cont > 3:
                 if temp_out in output:
@@ -92,21 +102,47 @@ class ShellHandler:
 
         return output
 
-    def client_ssh_close(self):
-        self.ssh.close()
+    def command_client(self, command):
+        list_line = []
+        std_input, std_output, std_error = self.ssh.exec_command(command, get_pty=True)
+        output = std_output.readlines()
+        timeout = 30
+
+        if std_output.channel.recv_exit_status() == 0:
+            print("Command Ok!")
+            endtime = time.time() + timeout
+
+            for line in output:
+                line = line.replace('\n', '')
+                print('>> ', line)
+                list_line.append(line)
+            time.sleep(1)  # Recommend sleep thread for secure in the conection
+
+            if std_output.channel.eof_received:
+                std_output.channel.close()
+
+            return list_line
+
+        else:
+            print("Command Fail!")
+            return []
+
+    def set_status_conx(self, e):
+        self.e = e
+
+    def get_status_conx(self):
+        return self.e
 
     def open_sftp(self):
         try:
-            self.sftp = self.client_ssh.open_sftp()
+            self.sftp = self.ssh.open_sftp()
             return self.sftp
         except:
             print("Open sftp Fail!\nCheck your connection Internet or credentials by server remote")
             return None
 
-    def sftp_close(self):
+    def client_ssh_close(self):
         self.ssh.close()
 
-ssh = ShellHandler(data.HOST, data.USER, data.PASS)
-while True:
-    cmd = input("cmd >> ")
-    ssh.execute(cmd)
+    def sftp_close(self):
+        self.sftp.close()

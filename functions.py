@@ -2,9 +2,9 @@ import json
 import os, glob, shutil, tempfile
 import subprocess
 import yaml
-
 import data
-from shh_client import Conex_ssh
+
+from shellhandler import ShellHandler
 from commands import *
 
 def create_folder(path):
@@ -138,7 +138,7 @@ def menu_execute(menu_json):
                     'vedraxx up':vedraxx_up, 'vedraxx down':vedraxx_down,
                     'vedraxx install docker':vedraxx_install_docker, 'vedraxx copy':vedraxx_copy}
 
-    client_ssh = Conex_ssh()
+    client_ssh = ShellHandler(data.HOST, data.USER, data.PASS)
     status_ssh = client_ssh.get_status_conx()
     if status_ssh == False:
         print('Conection Fail!, Try Again')
