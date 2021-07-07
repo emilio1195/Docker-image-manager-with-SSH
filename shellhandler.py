@@ -41,14 +41,24 @@ class ShellHandler:
 
             rl, wl, xl = select.select([self.stdout.channel], [], [], 0.0)
             if len(rl) > 0:
-                tmp = self.stdout.channel.recv(1024)
+                tmp = self.stdout.channel.recv(999999)
                 self.initialprompt = self.initialprompt + str(tmp.decode())
 
     def __del__(self):
         self.ssh.close()
         print("closed connection to {0}".format(self.host))
 
+    def invoke_newShell(self):
+        self.channel.shutdown_write()
+        self.channel.shutdown_read()
+        self.channel = self.ssh.invoke_shell()
+        self.stdin = self.channel.makefile('wb')
+        self.stdout = self.channel.makefile('r')
+        time.sleep(2)
+
     def execute(self, cmd):
+        self.stdin.flush()
+        time.sleep(0.5)
         cmd = cmd.strip('\n')
         print("Waiting...")
         self.stdin.write(cmd + '\n')
@@ -65,7 +75,7 @@ class ShellHandler:
             rl, wl, xl = select.select([self.stdout.channel], [], [], 0.0)
             if len(rl) > 0:
                 #cont = 0
-                tmp = self.stdout.channel.recv(1024)
+                tmp = self.stdout.channel.recv(999999)
                 output = str(tmp.decode("utf-8")).strip('\r\n')
                 array = output.replace('\r', '').split('\n')
                 for line in array:
@@ -78,28 +88,29 @@ class ShellHandler:
                                 print(subline)
 
             if '$' == (array[-1]).rstrip(' '):
-                print("\nFinish.\n")
+                print("\nFinish command.\n")
                 return '$'
             if 'command not found' in output:
-                print("\nFinish.\n")
+                print("\nFinish command.\n")
                 return '$'
-            '''
-            if cont > 3:
-                if temp_out in output:
-                    print("\nFinish.\n")
-                    break
-            '''
 
-            if 'password' in output:
-                self.stdin.write(input('pass: ')+'\n') #It is important sum the char \n
+            if 'clear' == (array[-1]).rstrip(' '):
+                print("\nFinish command.\n")
+                return '$'
+
+            if '[sudo] password' in output:
+                #self.stdin.write(input('pass: ')+'\n') #It is important sum the char \n
+                self.stdin.write(data.PASS + '\n')
+                self.stdin.flush()
                 output = ''
 
-            elif '[Y/n] ' in output:
+            elif '[Y/n]' in output:
                 self.stdin.write(input('[Y/n]: ')+'\n')
+                self.stdin.flush()
                 output = ''
 
             time.sleep(1)
-
+        self.stdout.flush()
         return output
 
     def command_client(self, command):

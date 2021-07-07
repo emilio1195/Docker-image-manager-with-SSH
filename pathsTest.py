@@ -10,6 +10,10 @@ import data
 path = os.path.join('.',data.name_folder_json)
 #js = read_json(path, data.file_config_json)
 
+if ('sd' == 'sd') & (3 == 3):
+    print('ok')
+
+
 import yaml
 
 with open(r'C:\Users\gta20\Documents\ProjectsPyCharm\Code_Menu (2)\Code_Menu\awesome-compose-master\wordpress-mysql\docker-compose.yaml') as file:
@@ -19,6 +23,8 @@ with open(r'C:\Users\gta20\Documents\ProjectsPyCharm\Code_Menu (2)\Code_Menu\awe
     print(services['db']['image'])
     for item, doc in data_yaml.items():
         print(item, ":", doc)
+
+
 
 '''
 for key in js.keys():

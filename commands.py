@@ -7,6 +7,27 @@ from pathlib import Path
 import json
 import requests
 import data
+def clean_buffer(client_ssh, delay=5):
+    client_ssh.command_client('clear')
+def control_cmd_interactive(list_commands, client_ssh, delay=0.5):
+    key = ''
+    #clean_buffer(client_ssh)
+    for command in list_commands:
+        cont = 0
+        while True:
+            key = client_ssh.execute(command)
+
+            if key.rstrip(' ') != '$':
+                command = ''
+                time.sleep(delay)
+
+            if key.rstrip(' ') == '$':
+                break
+            elif (key.rstrip(' ') == '') & (cont > 2):
+                print("\nFinish command.\n")
+                break
+            cont += 1
+        client_ssh.invoke_newShell()
 
 def vedraxx_install_docker(client_ssh):
     list_commands = ['sudo curl -fsSL https://get.docker.com | sh',
@@ -14,16 +35,8 @@ def vedraxx_install_docker(client_ssh):
                      'sudo docker run hello-world',
                      'sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose',
                      'sudo chmod +x /usr/local/bin/docker-compose']
-    key = ''
-    for command in list_commands:
-        while True:
-            key = client_ssh.execute(command)
 
-            if key.rstrip(' ') != '$':
-                command = ''
-                time.sleep(30)
-            else:
-                break
+    control_cmd_interactive(list_commands, client_ssh, delay=30)
 
 def vedraxx_release(i='', l='', n=''):
     #show versions
@@ -45,17 +58,23 @@ def vedraxx_up(install_name, client_ssh, n=''):
     #copy folder to remote folder
     vedraxx_install(install_name, client_ssh)
     path_server = get_path_server_remote(client_ssh)
-    print('docker-compose up, wait...')
-    #if (client_ssh.command_client(install_name) == 'Is a directory'):
-    cmd = "cd {path}; sudo docker-compose -f {name}_docker-compose.yaml up".format(path=os.path.join(path_server,install_name), name=install_name)
-    client_ssh.command_client(cmd)
+    path = os.path.join(path_server, install_name, install_name +'_docker-compose.yaml').replace('\\', '/')
+    print('sudo docker-compose up, wait...')
+    list_commands = ['sudo docker-compose -f {name} up'.format(name=path)]
+    control_cmd_interactive(list_commands, client_ssh)
 
 def vedraxx_down(install_name, client_ssh, n=''):
     #execute command in remote server
     path_server = get_path_server_remote(client_ssh)
-    print('docker-compose down, wait...')
-    cmd = "cd {path}; sudo docker-compose -f {name}_docker-compose.yaml down".format(path=os.path.join(path_server,install_name), name=install_name)
-    client_ssh.command_client(cmd)
+    path = os.path.join(path_server, install_name, install_name + '_docker-compose.yaml').replace('\\', '/')
+    list_commands = ['sudo docker-compose -f {name} down'.format(name=path)]
+    print('sudo docker-compose down, wait...')
+    '''
+    list_commands = ['cd {path}'.format(path=os.path.join(path_server, install_name).replace('\\', '/')),
+                     'sudo docker-compose -f {name}_docker-compose.yaml down'.format(name=install_name),
+                     'cd /home/']
+    '''
+    control_cmd_interactive(list_commands, client_ssh)
 
 def vedraxx_install(name_folder, client_ssh, n=''):
     #install docker & docker-compose in the server
