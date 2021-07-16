@@ -172,6 +172,14 @@ def menu_execute(menu_json):
                     break
                 elif command == 'shell':
                     shell_remote(client_ssh)
+                elif command == 'shell2':
+                    while True:
+                        cmd = input("cmd shell2 >> ")
+                        if cmd == 'back':
+                            print('Shell2 closed!')
+                            break
+                        else:
+                            control_cmd_interactive([cmd], client_ssh)
 
                 numer_spc = command.count(' ')
                 command_split = command.rsplit(' ', maxsplit=numer_spc-1)
