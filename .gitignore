@@ -6,12 +6,12 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-.idea
+.idea/
 __pycache__/
 awesome-compose-master/
-shell2.py
-ssh_client.py
-subprocess_shell.py
-shell_iteractive.py
-.txt
-.pub
+/shell2.py
+/ssh_client.py
+/subprocess_shell.py
+/shell_iteractive.py
+/*.txt
+/*.pub
