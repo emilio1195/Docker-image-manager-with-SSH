@@ -39,7 +39,9 @@
                             "Add registry username(optional)",
                             "Add registry password(optional)"
                         ]
-                    },
+                    }
+                },
+                {
                     "item2": {
                         "value": "Update",
                         "List_items": [
@@ -50,14 +52,18 @@
                             "Add registry username(optional)",
                             "Add registry password(optional)"
                         ]
-                    },
+                    }
+                },
+                {
                     "item3": {
                         "value": "Delete configuration",
                         "List_items": [
                             "List of all configuration availables",
                             "Enter the configuration name to delete"
                         ]
-                    },
+                    }
+                },
+                {
                     "item4": {
                         "value": "Back",
                         "List_items": []

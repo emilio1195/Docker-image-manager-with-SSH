@@ -3,7 +3,7 @@ import sys
 import threading
 
 # we'll be using a separate thread and a timed event to request the user input
-import data
+import dataV
 
 
 def timed_user_input(timer, wait, buffer_in, buffer_out, buffer_target):
@@ -17,7 +17,7 @@ def timed_user_input(timer, wait, buffer_in, buffer_out, buffer_target):
 if __name__ == "__main__":  # a guard from unintended usage
     input_buffer = sys.stdin  # a buffer to get the user input from
     output_buffer = sys.stdout  # a buffer to write rasa's output to
-    conexSSH = "ssh " + data.USER + '@' + data.HOST
+    conexSSH = "ssh " + dataV.USER + '@' + dataV.HOST
     cmd = input('cmd >> ')
     # for path in run(conexSSH + ' ' + cmd):
     # print(path)

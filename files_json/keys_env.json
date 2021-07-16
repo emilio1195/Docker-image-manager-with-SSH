@@ -1,20 +1,14 @@
-{
-	keys_menu1:{
-		"Configuration Name":"NAME_CONF",
-		"Add remote server ip":"SERVER_IP",
-		"Add remote port":"SERVER_PORT",
-		"Add registry(optional)":"REGISTRY",
-		"Add registry username(optional)":"USERNAME",
-		"Add registry password(optional)":"PASSWORD"
-	},
-	keys_menu2:{
-		"Installation name":"INSTALL_NAME",
-		"Add engine?(optional) yes/not":"ADD_ENGINE",
-		"Add transit-random-generator?(optional)":"TRANSIT_RANDOM_GENERATOR",
-		"Add transit-permit-ext?(optional))":"TRANSIT_PERMIT_EXT",
-		"Digit maintainer email":"MAINTAINER_EMAIL",
-		"Host/Ip Address":"HOST_IP",
-		"Digits version(lastest or RC)":"PASSWORD", "VERSION"
-	}
-
-}
+[
+    {
+        "Digit maintainer email": "MAINTAINER_EMAIL",
+        "Host/Ip Address": "SERVER_IP",
+        "Digits version(lastest or RC)": "VERSION"
+    },
+    {
+        "Add remote server ip": "SERVER_IP",
+        "Add remote port": "SERVER_PORT",
+        "Add registry(optional)": "REGISTRY",
+        "Add registry username(optional)": "USER_REGISTRY",
+        "Add registry password(optional)": "PASS_REGISTRY"
+    }
+]

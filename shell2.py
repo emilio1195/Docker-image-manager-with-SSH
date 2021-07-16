@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 
 import pexpect
 
-import data
+import dataV
 
 
 def run(command):
@@ -24,7 +24,7 @@ def run(command):
 
 
 if __name__ == "__main__":
-    conexSSH = "ssh "+data.USER+'@'+data.HOST
+    conexSSH = "ssh " + dataV.USER + '@' + dataV.HOST
     cmd = input('cmd >> ')
     #for path in run(conexSSH + ' ' + cmd):
         #print(path)

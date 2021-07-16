@@ -60,3 +60,76 @@ def Delete(data_env, path):
                         print(f"File {name_config} deleted correctly!")
                     else:
                         print('Error, Name config incorrect!')
+
+
+def vedraxx_release(i='', l='', n=''):
+    #show versions
+    url_registry = data.registry.rstrip('/')
+    #url_registry = input('Url Registry where are the images '
+    #                     '(example: https://registry.domain/):\n>> ').rstrip('/')
+
+    solditems = requests.get(url_registry)
+    data = solditems.json()
+    for name_image in data['results']:
+        name = name_image['name']
+        print('\n> image: ', name)
+        solditems = requests.get(url_registry + '/' + name + '/tags')
+        data_tags = solditems.json()
+        for tags in data_tags['results']:
+            print(' - ', tags["name"])
+
+
+
+if "Host/Ip" in vkey:
+    docker_data["networks"] = {'frontend': {'ipam':{'config':[{"subnet":value}]}}}
+
+
+
+
+
+def Add(data_env, path):
+    ''
+     if os.path.isfile(os.path.join(path, file_json)):
+        config_data = read_env(path, file_json)
+    else:
+        config_data = {}
+    ''
+
+    config_data = {}
+    for vkey, i in zip(data_env, range(len(data_env))):
+        value = input(vkey + ": ")
+        if value == '':
+            value = 'null'
+        if i == 0:
+            name_file_env = value
+
+        key = get_key(vkey)
+        config_data[key] = value
+
+    write_env(config_data, path, name_file_env)
+
+
+def download_git_files_yaml_env(url_gitHib_repo, path_store, name_intall_compose):
+    #dst = './t'
+    temp_dir = tempfile.mkdtemp()
+    print(temp_dir)
+    args = ['git', 'clone', '--depth=1', url_gitHib_repo, temp_dir]
+    res = subprocess.Popen(args, stdout=subprocess.PIPE)
+    output, _error = res.communicate()
+
+    if not _error:
+        # print(output)
+        # Copy desired file from temporary dir
+
+        files_yml = glob.glob1(os.path.join(temp_dir, name_intall_compose), '*.yaml')
+        files_env = glob.glob1(os.path.join(temp_dir, name_intall_compose), '*.env')
+        for file in files_yml:
+            print('Moving file >> ', file)
+            shutil.move(os.path.join(temp_dir, name_intall_compose, file), os.path.join(path_store, file))
+        for file in files_env:
+            print('Moving file >> ', file)
+            shutil.move(os.path.join(temp_dir, name_intall_compose, file), os.path.join(path_store, file))
+        # Remove temporary dir
+        #shutil.rmtree(temp_dir)
+    else:
+        print(_error)

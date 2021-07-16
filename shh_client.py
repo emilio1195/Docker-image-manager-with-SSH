@@ -3,7 +3,7 @@ import time
 from filecmp import cmp
 
 import paramiko
-import data
+import dataV
 
 #command for remove all content into main folder --> rm -rf *
 
@@ -14,7 +14,7 @@ class Conex_ssh:
             self.client_ssh = paramiko.SSHClient()
             self.client_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             # password = input('Pass: ')
-            self.client_ssh.connect(hostname=data.HOST, username=data.USER, password=data.PASS)
+            self.client_ssh.connect(hostname=dataV.HOST, username=dataV.USER, password=dataV.PASS)
             print("Conection Ok!")
             self.set_status_conx(True)
         except paramiko.AuthenticationException as authenticationException:

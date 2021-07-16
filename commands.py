@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import json
 import requests
-import data
+import dataV
 def clean_buffer(client_ssh, delay=5):
     client_ssh.command_client('clear')
 def control_cmd_interactive(list_commands, client_ssh, delay=0.5):
@@ -40,19 +40,20 @@ def vedraxx_install_docker(client_ssh):
 
 def vedraxx_release(i='', l='', n=''):
     #show versions
-    url_registry = data.registry.rstrip('/')
-    #url_registry = input('Url Registry where are the images '
+    url_registry = dataV.registry.rstrip('/')
+    # url_registry = input('Url Registry where are the images '
     #                     '(example: https://registry.domain/):\n>> ').rstrip('/')
 
-    solditems = requests.get(url_registry)
+    solditems = requests.get(url_registry + '/_catalog')
     data = solditems.json()
-    for name_image in data['results']:
-        name = name_image['name']
+    for name_image in data['repositories']:
+        name = name_image
         print('\n> image: ', name)
-        solditems = requests.get(url_registry + '/' + name + '/tags')
-        data_tags = solditems.json()
-        for tags in data_tags['results']:
-            print(' - ', tags["name"])
+        if not "/" in name:
+            solditems = requests.get(url_registry + '/' + name + '/tags/list')
+            data_tags = solditems.json()
+            for tags in data_tags['tags']:
+                print(' - ', tags)
 
 def vedraxx_up(install_name, client_ssh, n=''):
     #copy folder to remote folder
@@ -79,13 +80,14 @@ def vedraxx_down(install_name, client_ssh, n=''):
 def vedraxx_install(name_folder, client_ssh, n=''):
     #install docker & docker-compose in the server
     # install docker & docker-compose in the server
+
     if name_folder == 'docker':
         vedraxx_install_docker(client_ssh)
     else:
         path_dest_remote = get_path_server_remote(client_ssh)
-        path_folder = Path(os.path.join('.',data.name_folder_compose,name_folder)).parent.absolute()
+        path_folder_ = Path(os.path.join('.', dataV.name_folder_compose, name_folder)).parent.absolute()
         ftp_client = client_ssh.open_sftp()
-        put_dir(path_folder, path_dest_remote, name_folder, ftp_client)
+        put_dir(path_folder_, path_dest_remote, name_folder, ftp_client)
         client_ssh.sftp_close()
 
 def vedraxx_copy(path_folder_local, client_ssh, path_dest_remote):
@@ -123,32 +125,34 @@ def put_dir(source, dest, name_folder, sftp):
     source = os.path.expandvars(source).rstrip('\\').rstrip('/')
     dest = os.path.expandvars(dest).rstrip('\\').rstrip('/')
 
-    path_newFolder = os.path.join(dest, name_folder).replace('\\', '/').replace(' ', '_')
-    destPathExists = create_folder(sftp, path_newFolder) #create folder in path remote server
+    if os.path.isdir(os.path.join(source, name_folder)):
+        path_newFolder = os.path.join(dest, name_folder).replace('\\', '/').replace(' ', '_')
+        destPathExists = create_folder(sftp, path_newFolder) #create folder in path remote server
 
-    if destPathExists == False:
-        print('Error to create dir: {}\n Try Again!'.format(path_newFolder))
+        if destPathExists == False:
+            print('$$ Error to create dir: {} into server, Try Again!'.format(path_newFolder))
+        else:
+            for root, dirs, files in os.walk(os.path.join(source, name_folder), topdown=True):
+                for name in files:
+                    file_path_local = os.path.join(root, name).replace('/', '\\')
+                    file_path_remote = os.path.join(dest, ''.join(root.rsplit(source))[1:], name)\
+                                                .replace('\\','/').replace(' ','_')
+                    print("Copying file... >>\nlocal: {} to\nremote: {}".format(file_path_local, file_path_remote))
+                    with TqdmWrap(ascii=True, unit='b', unit_scale=True) as pbar:
+                        # Call paramiko with tqdm callback
+                        sftp.put(file_path_local, file_path_remote, callback=pbar.viewBar)
+                for name in dirs:
+                    folder_path_remote = os.path.join(dest, ''.join(root.rsplit(source))[1:], name)\
+                                                    .replace('\\', '/').replace(' ', '_')
+                    destPathExists = create_folder(sftp, folder_path_remote)  # create folder in path remote server
+                    if destPathExists == False:
+                        print('Error to create dir: {}\n Try Again!'.format(folder_path_remote))
+                    else:
+                        print("Created sub-folder... >> ", folder_path_remote)
+
+            print("Copied Succesful in path_remote >> ", path_newFolder)
     else:
-        for root, dirs, files in os.walk(os.path.join(source, name_folder), topdown=True):
-            for name in files:
-                file_path_local = os.path.join(root, name).replace('/', '\\')
-                file_path_remote = os.path.join(dest, ''.join(root.rsplit(source))[1:], name)\
-                                            .replace('\\','/').replace(' ','_')
-                print("Copying file... >>\nlocal: {} to\nremote: {}".format(file_path_local, file_path_remote))
-                with TqdmWrap(ascii=True, unit='b', unit_scale=True) as pbar:
-                    # Call paramiko with tqdm callback
-                    sftp.put(file_path_local, file_path_remote, callback=pbar.viewBar)
-            for name in dirs:
-                folder_path_remote = os.path.join(dest, ''.join(root.rsplit(source))[1:], name)\
-                                                .replace('\\', '/').replace(' ', '_')
-                destPathExists = create_folder(sftp, folder_path_remote)  # create folder in path remote server
-                if destPathExists == False:
-                    print('Error to create dir: {}\n Try Again!'.format(folder_path_remote))
-                else:
-                    print("Created sub-folder... >> ", folder_path_remote)
-
-        print("Copied Succesful in path_remote >> ", path_newFolder)
-
+        print('Direcotry no exist!')
 
 
 def get_path_server_remote(client_ssh):
@@ -166,6 +170,7 @@ def create_folder(ftp_client, path_newFolder):
             destPathExists = True
         except Exception as e:
             destPathExists = False
+            print(e)
     return destPathExists
 
 def shell_remote(client_ssh):

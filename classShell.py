@@ -2,11 +2,11 @@ import pty, sys
 from subprocess import Popen, PIPE, STDOUT
 from time import sleep
 from os import fork, waitpid, execv, read, write
-import data
+import dataV
 
 
 class classSsh():
-    def __init__(self, host=data.HOST, execute='echo "done" > /root/testing.txt', askpass=False, user=data.USER, password=b''.join(data.PASS)):
+    def __init__(self, host=dataV.HOST, execute='echo "done" > /root/testing.txt', askpass=False, user=dataV.USER, password=b''.join(dataV.PASS)):
         self.exec = execute
         self.host = host
         self.user = user

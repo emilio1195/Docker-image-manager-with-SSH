@@ -2,7 +2,7 @@ import select
 import time
 import paramiko
 
-import data
+import dataV
 
 
 class ShellHandler:
@@ -100,7 +100,7 @@ class ShellHandler:
 
             if '[sudo] password' in output:
                 #self.stdin.write(input('pass: ')+'\n') #It is important sum the char \n
-                self.stdin.write(data.PASS + '\n')
+                self.stdin.write(dataV.PASS + '\n')
                 self.stdin.flush()
                 output = ''
 

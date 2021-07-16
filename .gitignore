@@ -9,4 +9,9 @@
 .idea
 __pycache__/
 awesome-compose-master/
-venv/
+shell2.py
+ssh_client.py
+subprocess_shell.py
+shell_iteractive.py
+.txt
+.pub
