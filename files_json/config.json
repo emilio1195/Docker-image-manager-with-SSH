@@ -1,0 +1,9 @@
+{
+    "testDemo": {
+        "testDemo_SERVER_IP": "127.58.22.5",
+        "testDemo_SERVER_PORT": "",
+        "testDemo_REGISTRY": "",
+        "testDemo_USER_REGISTRY": "",
+        "testDemo_PASS_REGISTRY": ""
+    }
+}
