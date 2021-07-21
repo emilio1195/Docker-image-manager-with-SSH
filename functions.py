@@ -182,24 +182,27 @@ def menu_execute(menu_json):
                             control_cmd_interactive([cmd], client_ssh)
 
                 numer_spc = command.count(' ')
-                command_split = command.rsplit(' ', maxsplit=numer_spc-1)
-
-                command_execute = command_split[0]
-
-                if len(command_split) > 1:
-                    source_installation = str(command_split[1]).replace('\\\\','\\')
+                if numer_spc > 3 :
+                    print('Spaces out range, check command')
                 else:
-                    source_installation = ''
+                    command_split = command.rsplit(' ', maxsplit=numer_spc-1)
 
-                if len(command_split) > 2:
-                    dest_remote_path = command_split[2]
-                else:
-                    dest_remote_path = ''
+                    command_execute = command_split[0]
 
-                if (command_execute in dic_commands):
-                    dic_commands[command_execute](source_installation, client_ssh, dest_remote_path)
-                else:
-                    print('No exist command!')
+                    if len(command_split) > 1:
+                        source_installation = str(command_split[1]).replace('\\\\','\\')
+                    else:
+                        source_installation = ''
+
+                    if len(command_split) > 2:
+                        dest_remote_path = command_split[2]
+                    else:
+                        dest_remote_path = ''
+
+                    if (command_execute in dic_commands):
+                        dic_commands[command_execute](source_installation, client_ssh, dest_remote_path)
+                    else:
+                        print('No exist command!')
 
 def menu_config(menu_json):
     list_options = []

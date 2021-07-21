@@ -18,13 +18,13 @@ with open(os.path.join('.', dataV.name_folder_json, menu_json)) as file:
     while True:
         for menu in data_menu['Menu_Principal']:
             print('\n**_______ Main Menu ________**')
-            for list_item, i in zip(menu, range(len(menu))):
-                print(list_item + '(%d)'% i)
+            for list_item, i in zip(menu, range(1, len(menu) + 1)):
+                print('%d. ' % i + list_item)
                 list_options.append(list_item)
 
             while True:
                 try:
-                    option = int(input('Insert option: '))
+                    option = int(input('Insert option: ')) - 1
                     if option > 2:
                         print('Error option, try again!')
                     else: break
@@ -37,7 +37,7 @@ with open(os.path.join('.', dataV.name_folder_json, menu_json)) as file:
                     if item['item'+str(num_item)]['value'] == '':
                         list_functions[option](item['item'+str(num_item)]['List_items'])
                     else:
-                        print(item['item'+str(num_item)]['value'] + '(%d)' % num_item)
+                        print('%d. ' % num_item + item['item'+str(num_item)]['value'])
                         list_option_config.append(item['item'+str(num_item)]['value'])
 
                 if (item['item'+str(num_item)]['value'] != ''):
